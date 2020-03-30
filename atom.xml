@@ -3,11 +3,11 @@
   <title>Descartes</title>
   <icon>https://www.gravatar.com/avatar/ab270cc08d4110292a1626ae176db83c</icon>
   
-  <link href="/atom.xml" rel="self"/>
+  <link href="/tech/atom.xml" rel="self"/>
   
-  <link href="https://descarteshub.github.io/"/>
-  <updated>2019-08-06T01:00:50.133Z</updated>
-  <id>https://descarteshub.github.io/</id>
+  <link href="https://descarteshub.github.io/tech/"/>
+  <updated>2019-08-06T02:34:55.491Z</updated>
+  <id>https://descarteshub.github.io/tech/</id>
   
   <author>
     <name>chan</name>
@@ -17,9 +17,30 @@
   <generator uri="http://hexo.io/">Hexo</generator>
   
   <entry>
+    <title>hh</title>
+    <link href="https://descarteshub.github.io/tech/2019/08/06/hh/"/>
+    <id>https://descarteshub.github.io/tech/2019/08/06/hh/</id>
+    <published>2019-08-06T10:34:40.000Z</published>
+    <updated>2019-08-06T02:34:55.491Z</updated>
+    
+    <content type="html"><![CDATA[<h3 id="hus"><a href="#hus" class="headerlink" title="hus"></a>hus</h3>]]></content>
+    
+    <summary type="html">
+    
+      
+      
+        &lt;h3 id=&quot;hus&quot;&gt;&lt;a href=&quot;#hus&quot; class=&quot;headerlink&quot; title=&quot;hus&quot;&gt;&lt;/a&gt;hus&lt;/h3&gt;
+      
+    
+    </summary>
+    
+    
+  </entry>
+  
+  <entry>
     <title>Hello World</title>
-    <link href="https://descarteshub.github.io/2019/08/06/hello-world/"/>
-    <id>https://descarteshub.github.io/2019/08/06/hello-world/</id>
+    <link href="https://descarteshub.github.io/tech/2019/08/06/hello-world/"/>
+    <id>https://descarteshub.github.io/tech/2019/08/06/hello-world/</id>
     <published>2019-08-06T01:00:50.133Z</published>
     <updated>2019-08-06T01:00:50.133Z</updated>
     
