@@ -1,0 +1,69 @@
+这段日志显示了设备的电池服务和广播活动的详细记录，特别是涉及到电池状态变化的处理。以下是详细分析：
+
+1. **电池状态变化广播**
+   ```
+   07-09 19:44:08.513101  1746  1746 V ActivityManager: Broadcast sticky: Intent { act=android.intent.action.BATTERY_CHANGED pkg=null } ordered=false userid=-1 resultTo null
+   ```
+   - 广播了一个电池状态变化的意图，`BATTERY_CHANGED`。
+
+2. **电池服务特性**
+   ```
+   07-09 19:44:08.515592  1746  2119 D OplusBatteryServiceFeature: getWirelessAdapterPower: -22
+   07-09 19:44:08.517552  1746  2119 D OplusBatteryServiceFeature: getBmsHeatingStatus: 0
+   ```
+   - 获取无线适配器功率和电池管理系统（BMS）的加热状态。
+
+3. **USB接口状态变化**
+   ```
+   07-09 19:44:08.518295  1746  2119 D OplusBatteryService: USB interface status changed    UsbStatus:0  LastUsbStatus:0  OtgOnline:0  LastOtgOnline:0  PlugType:1  LastPlugType:0
+   ```
+   - USB接口状态改变，记录了当前和上一次的USB状态以及插头类型的变化。
+
+4. **处理电池相关数值**
+   ```
+   07-09 19:44:08.519995  1746  2119 D OplusBatteryService: Processing additional values: mChargerVoltage=5118, mLastChargerVoltage=5128, mBatteryCurrent=5, mLastBatteryCurrent=-717, mBatteryLevel=20, mBatteryTemperature=389 ,chargertechnologysupport: 21, mChargerTechnology=0, mChargeFastCharger=false, mChargeridVoltage=0, mLastChargeridVoltage=0, mPlugType=1, mLastPlugType=0, mUsbStatus=0, mBatteryHwStatus=1, mHwStatusIsSet=1, mBatteryIcStatus=0, mIcStatusIsSet=1, mFastChgType=0 ,mChargeWattage: 0 ,mPPSChgIng: 0, mWirelessFastChgType=-22, mBmsHeatingStatus=0
+   ```
+   - 处理和记录了一系列电池相关的数值，包括充电电压、电流、电池电量、温度等。
+
+5. **发送额外的电池状态变化广播**
+   ```
+   07-09 19:44:08.520370  1746  2119 D OplusBatteryService: Sending ACTION_ADDITIONAL_BATTERY_CHANGED.  mChargerVoltage: 5118 ,mBatteryCurrent: 5 ,mChargerTechnologySupport: 21 ,mAdapterClassification: 0 ,mChargeFastCharger: false ,mChargerTechnology: 0 ,mPlugType: 1 ,mFastChgType: 0 ,mPPSChgIng: 0 ,mChargeWattage: 0 ,mWirelessFastChgType: -22 ,mBmsHeatingStatus: 0
+   ```
+   - 发送额外的电池状态变化广播，包含了一系列电池的详细信息。
+
+6. **发送插头状态变化广播**
+   ```
+   07-09 19:44:08.521884  1746  1935 D OplusBatteryService: send broadcast : BATTERY_PLUGGED_CHANGED : mPlugType = 1
+   07-09 19:44:08.522162  1746  1935 V ActivityManager: Broadcast sticky: Intent { act=oplus.intent.action.BATTERY_PLUGGED_CHANGED pkg=null } ordered=false userid=-1 resultTo null
+   ```
+   - 发送了一个插头状态变化的广播，`BATTERY_PLUGGED_CHANGED`。
+
+7. **发送USB硬件状态广播**
+   ```
+   07-09 19:44:08.523560  1746  1935 D OplusBatteryService: send broadcast : oplus.intent.action.USB_HW_STATUS
+   ```
+   - 发送USB硬件状态变化的广播。
+
+8. **发送额外的电池状态变化广播**
+   ```
+   07-09 19:44:08.525997  1746  1935 V ActivityManager: Broadcast sticky: Intent { act=android.intent.action.ADDITIONAL_BATTERY_CHANGED pkg=null } ordered=false userid=-1 resultTo null
+   ```
+   - 再次发送了一个额外的电池状态变化的广播。
+
+9. **电池服务特性**
+   ```
+   07-09 19:44:08.534004  1746  4583 D OplusBatteryServiceFeature: getPsyBatteryNotify: 0
+   07-09 19:44:08.540300  1746  4583 D OplusBatteryServiceFeature: getPsyBatteryRm: 978
+   07-09 19:44:08.545787  1746  4583 D OplusBatteryServiceFeature: getPsyBatteryShortStatus: 1
+   07-09 19:44:08.546834  1746  4583 D OplusBatteryServiceFeature: getBattShortIcOtpStatus: 0
+   ```
+   - 获取了一系列电池服务的特性，如电池通知、电池剩余容量、电池短路状态等。
+
+10. **发送插头状态变化广播**
+    ```
+    07-09 19:44:08.548693  1746  1746 D BatteryServiceExtImpl: send broadcast : BATTERY_PLUGGED_CHANGED : plugType = 1
+    07-09 19:44:08.548979  1746  1746 W ContextImpl: Calling a method in the system process without a qualified user: android.app.ContextImpl.sendBroadcast:1247 com.android.server.BatteryServiceExtImpl$1.run:230 android.os.Handler.handleCallback:958 android.os.Handler.dispatchMessage:99 android.os.Looper.loopOnce:255
+    ```
+    - 再次发送插头状态变化的广播，提示调用了系统进程中的方法但没有合适的用户。
+
+总结：这段日志显示了在电池状态变化时，Oplus 电池服务进行了详细的数据处理和广播发送。通过分析这些日志，可以了解到电池的状态变化、USB接口的状态、以及相关广播的发送过程。这些信息有助于调试和优化电池管理相关的功能。
