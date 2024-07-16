@@ -1,0 +1,18 @@
+@echo off
+echo Clearing logcat buffers...
+adb logcat -c
+
+echo Capturing main buffer...
+start cmd /c adb logcat -b main > main_log.txt
+
+echo Capturing system buffer...
+start cmd /c adb logcat -b system > system_log.txt
+
+echo Capturing events buffer...
+start cmd /c adb logcat -b events > events_log.txt
+
+echo Logs are being captured. Press any key to stop.
+pause
+
+echo Stopping log capture...
+taskkill /IM adb.exe /F
