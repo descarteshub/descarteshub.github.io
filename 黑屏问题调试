@@ -1,3 +1,6 @@
+下面是对这段代码的详细分析和注释，解释了每个步骤的作用：
+
+```java
 /**
  * Processes the activities to be stopped or destroyed.
  * 处理那些需要停止或销毁的 Activity。当当前处于 resumed 状态的 Activity 处于空闲或已经绘制之后，
@@ -103,3 +106,24 @@ void processStoppingAndFinishingActivities(ActivityRecord launchedActivity,
         }
     }
 }
+```
+
+### 代码关键点总结
+
+1. **处理停止的 Activity：**
+   - 遍历 `mStoppingActivities` 列表，检查每个 Activity 是否仍在转场动画中（`animating`）。
+   - 如果不在动画中，或者系统处于关机状态，或者任务被 PIP 强制隐藏，则该 Activity 可以被处理。
+   - 对于状态为 `PAUSING` 且不允许立即处理的情况，通过重新安排空闲超时来延迟处理。
+   - 将满足条件的 Activity 添加到 `readyToStopActivities` 列表中，并从原列表中移除。
+
+2. **对准备停止的 Activity 进行停止或销毁：**
+   - 遍历 `readyToStopActivities` 列表，对处于历史记录中的 Activity：
+     - 如果 Activity 正在 `finishing` 状态，则调用 `destroyIfPossible` 销毁它。
+     - 否则，调用 `stopIfPossible` 停止它。
+
+3. **处理销毁的 Activity：**
+   - 检查 `mFinishingActivities` 是否有等待销毁的 Activity。
+   - 将所有等待销毁的 Activity 复制到临时列表中，并清空 `mFinishingActivities`。
+   - 对每个处于历史记录中的 Activity，调用 `destroyImmediately` 立即销毁。
+
+这段代码确保了在适当时机（例如当所有 resumed 的 Activity 处于空闲或绘制完毕状态时），能够安全地停止或销毁不再需要的 Activity，从而保证系统资源的正确释放和界面状态的一致性。
