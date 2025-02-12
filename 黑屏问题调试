@@ -1,1 +1,105 @@
+/**
+ * Processes the activities to be stopped or destroyed.
+ * 处理那些需要停止或销毁的 Activity。当当前处于 resumed 状态的 Activity 处于空闲或已经绘制之后，
+ * 就会调用此方法以便执行停止或销毁操作。
+ */
+void processStoppingAndFinishingActivities(ActivityRecord launchedActivity,
+        boolean processPausingActivities, String reason) {
 
+    // 用于存放已经准备好可以停止的 Activity。
+    // 这些 Activity 原本是被安排在 mStoppingActivities 中，但因等待转场动画结束而延迟处理，
+    // 现在确认可以立即进行停止操作。
+    ArrayList<ActivityRecord> readyToStopActivities = null;
+
+    // 遍历所有等待停止的 Activity 列表（mStoppingActivities）。
+    for (int i = 0; i < mStoppingActivities.size(); i++) {
+        // 获取当前要检查的 ActivityRecord。
+        final ActivityRecord s = mStoppingActivities.get(i);
+
+        // 判断当前 Activity 是否正处于转场动画中：
+        //   1. s.isInTransition() 检查是否处于转场状态。
+        //   2. s.getTask() != null 确保该 Activity 属于某个任务。
+        //   3. !s.getTask().isForceHidden() 如果所在任务被强制隐藏，则不认为它在动画中。
+        // 此外，对于在 force hidden 状态下的任务，我们希望在配置更改之前就调用 onStop，
+        // 例如在移除 Picture-in-Picture (PIP) 转场时。
+        final boolean animating = s.isInTransition()
+                && s.getTask() != null && !s.getTask().isForceHidden();
+
+        // 记录日志，输出当前 Activity 的状态，包括是否可见(nowVisible)、是否处于动画状态(animating)、
+        // 以及是否正在 finishing 状态。
+        ProtoLog.v(WM_DEBUG_STATES, "Stopping %s: nowVisible=%b animating=%b finishing=%s",
+                s, s.nowVisible, animating, s.finishing);
+
+        // 判断是否可以停止该 Activity：
+        // 如果 Activity 没有处于转场动画状态，或者系统正在关闭（mService.mShuttingDown），
+        // 或者该 Activity 所在的根任务因 PIP 模式而被强制隐藏，则认为可以进行停止处理。
+        if (!animating || mService.mShuttingDown
+                || s.getRootTask().isForceHiddenForPinnedTask()) {
+
+            // 如果当前不允许处理处于 PAUSING 状态的 Activity（processPausingActivities 为 false），
+            // 并且当前 Activity正处于 PAUSING 状态，则延迟处理此 Activity。
+            // 此时，通过移除当前 Activity 的空闲超时并重新调度一个延迟的空闲超时，
+            // 以便稍后再次尝试处理。
+            if (!processPausingActivities && s.isState(PAUSING)) {
+                removeIdleTimeoutForActivity(launchedActivity);
+                scheduleIdleTimeout(launchedActivity);
+                continue; // 跳过此 Activity，等待下一次处理
+            }
+
+            // 输出日志，标记该 Activity 已准备好停止。
+            ProtoLog.v(WM_DEBUG_STATES, "Ready to stop: %s", s);
+
+            // 如果 readyToStopActivities 列表还没有被初始化，则创建一个新的列表。
+            if (readyToStopActivities == null) {
+                readyToStopActivities = new ArrayList<>();
+            }
+            // 将当前 Activity 添加到准备停止的列表中。
+            readyToStopActivities.add(s);
+
+            // 从 mStoppingActivities 列表中移除当前 Activity，
+            // 因为它已经进入了准备停止的状态，不需要在后续继续检查。
+            mStoppingActivities.remove(i);
+            // 由于删除了列表中的一个元素，所以需要将索引 i 减 1，以防漏检下一个元素。
+            i--;
+        }
+    }
+
+    // 处理那些已经准备好停止的 Activity
+    final int numReadyStops = readyToStopActivities == null ? 0 : readyToStopActivities.size();
+    for (int i = 0; i < numReadyStops; i++) {
+        final ActivityRecord r = readyToStopActivities.get(i);
+        // 只有处于历史记录中的 Activity 才会被停止。isInHistory() 通常用于判断 Activity 是否仍然存在于任务栈中。
+        if (r.isInHistory()) {
+            // 如果 Activity 标记为 finishing 状态，则尝试销毁它。
+            if (r.finishing) {
+                // TODO: 后续可能需要改进逻辑，等待合适的空闲状态来销毁正确的 Activity，而不仅仅是任意一个。
+                r.destroyIfPossible(reason);
+            } else {
+                // 否则，尝试调用 stopIfPossible 来停止 Activity。
+                r.stopIfPossible();
+            }
+        }
+    }
+
+    // 处理那些已经安排为销毁的 Activity
+    final int numFinishingActivities = mFinishingActivities.size();
+    // 如果没有等待销毁的 Activity，则直接返回，不再执行后续逻辑。
+    if (numFinishingActivities == 0) {
+        return;
+    }
+
+    // 将所有在 mFinishingActivities 中的 Activity 复制到一个新的列表 finishingActivities，
+    // 并清空原列表，以便后续不会重复处理。
+    final ArrayList<ActivityRecord> finishingActivities = new ArrayList<>(mFinishingActivities);
+    mFinishingActivities.clear();
+
+    // 遍历所有需要销毁的 Activity
+    for (int i = 0; i < numFinishingActivities; i++) {
+        final ActivityRecord r = finishingActivities.get(i);
+        // 只处理还在历史记录中的 Activity
+        if (r.isInHistory()) {
+            // 立即销毁 Activity，并在销毁原因前添加 "finish-" 前缀
+            r.destroyImmediately("finish-" + reason);
+        }
+    }
+}
